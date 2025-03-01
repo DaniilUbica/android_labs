@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
+import android.widget.TextView
 
 class ImageRateCard @JvmOverloads constructor(
     context: Context,
@@ -14,32 +15,36 @@ class ImageRateCard @JvmOverloads constructor(
 ) : LinearLayout(context, attrs, defStyleAttr) {
     private lateinit var imageView: ImageView
     private lateinit var radioGroup: RadioGroup
+    private lateinit var nameTextView: TextView
+    private var onValueSelectedListener: ((Int) -> Unit)? = null
 
     init {
         LayoutInflater.from(context).inflate(R.layout.card, this, true)
 
         imageView = findViewById(R.id.imageView)
         radioGroup = findViewById(R.id.radioGroup)
+        nameTextView = findViewById(R.id.imageName)
 
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.ImageRateCard, defStyleAttr, 0)
-        val imageResId = typedArray.getResourceId(R.styleable.ImageRateCard_imageSrc, 0)
-
-        if (imageResId != 0) {
-            imageView.setImageResource(imageResId)
+        radioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val selectedValue = when (checkedId) {
+                R.id.radioButton1 -> 1
+                R.id.radioButton2 -> 2
+                R.id.radioButton3 -> 3
+                else -> -1
+            }
+            onValueSelectedListener?.invoke(selectedValue)
         }
-        typedArray.recycle()
     }
 
     fun setImage(resId: Int) {
         imageView.setImageResource(resId)
     }
 
-    fun getSelectedValue(): Int {
-        return when (radioGroup.checkedRadioButtonId) {
-            R.id.radioButton1 -> 1
-            R.id.radioButton2 -> 2
-            R.id.radioButton3 -> 3
-            else -> -1
-        }
+    fun setName(name: String) {
+        nameTextView.text = name
+    }
+
+    fun setOnValueSelectedListener(listener: (Int) -> Unit) {
+        this.onValueSelectedListener = listener
     }
 }

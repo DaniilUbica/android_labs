@@ -8,6 +8,8 @@ import android.widget.Toast
 import android.widget.RadioGroup
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import java.lang.Integer.max
 
 class MainActivity : ComponentActivity() {
@@ -17,12 +19,27 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        val items = listOf(
+            ImageRateCardData(R.drawable.pic_1, -1, "Бзыря", "Просто Бзыря - маленький пес"),
+            ImageRateCardData(R.drawable.pic_2, -1, "Свинокот", "То ли кот, то ли свинья, каждый видит в нем что-то свое"),
+            ImageRateCardData(R.drawable.pic_3, -1, "Огонек", "Кот с депрессией просит закурить")
+        )
+
+        val adapter = ImageRateCardAdapter(items) { position, selectedValue ->
+            items[position].selectedValue = selectedValue
+        }
+
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
+
         val button: Button = findViewById(R.id.submitButton)
         button.setOnClickListener {
-            val maxRate = getRates().maxByOrNull { it.first }
+            val selectedValues = items.map { it.selectedValue }
+            val maxRate = selectedValues.maxOrNull()
 
-            if (maxRate != null && maxRate.first != -1) {
-                val selectedImageResName = maxRate.second
+            if (maxRate != null && maxRate != -1) {
+                val selectedImageResName = items[selectedValues.indexOf(maxRate)].imageResId
                 val intent = Intent(this, ResultActivity::class.java)
                 intent.putExtra("selected_image", selectedImageResName)
                 startActivity(intent)
@@ -30,13 +47,5 @@ class MainActivity : ComponentActivity() {
                 Toast.makeText(this, "Rate pictures", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun getRates(): List<Pair<Int, Int>> {
-        val firstRate = Pair(findViewById<ImageRateCard>(R.id.card1).getSelectedValue(), R.drawable.pic_1)
-        val secondRate = Pair(findViewById<ImageRateCard>(R.id.card2).getSelectedValue(), R.drawable.pic_2)
-        val thirdRate = Pair(findViewById<ImageRateCard>(R.id.card3).getSelectedValue(), R.drawable.pic_3)
-
-        return listOf(firstRate, secondRate, thirdRate)
     }
 }
